@@ -1,28 +1,26 @@
 <?php
 
 use App\Http\Controllers\CrudController;
+use App\Http\Controllers\DataController;
 use App\Http\Controllers\FormEngine;
 use App\Http\Controllers\HRController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+Route::controller(DataController::class)->group(function () {
+    Route::any('fetchRecordById', 'fetchRecordById');
+    Route::any('GlobalDataFetcher', 'GlobalDataFetcher');
+    Route::any('VueFormfetchRecordById', 'VueFormfetchRecordById');
+    Route::any('FetchClusters', 'FetchClusters');
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "api" middleware group. Make something great!
-|
-*/
+});
+
 Route::controller(HRController::class)->group(function () {
+    Route::get('getOneEmployee', 'getOneEmployee');
     Route::get('GetDepartments', 'getDepartments');
     Route::get('GetPositions', 'getPositions');
     Route::get('GetEmployees', 'getEmployees');
+    Route::get('getEmployees', 'getEmployees');
 });
-
 
 Route::controller(FormEngine::class)->group(function () {
 
@@ -31,6 +29,8 @@ Route::controller(FormEngine::class)->group(function () {
 });
 
 Route::controller(CrudController::class)->group(function () {
+
+    Route::get('getTableColumns', 'getTableColumns')->name('getTableColumns');
 
     Route::post('MassDelete', 'MassDelete')->name('MassDelete');
 

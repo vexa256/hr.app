@@ -3,109 +3,56 @@
 namespace App\Http\Controllers;
 
 use DB;
-use Illuminate\Http\Request;
 // use Illuminate\Support\Facades\DB;
 
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Cache;
-
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Eloquent\Model;
-
 use Illuminate\Support\Facades\Validator;
+
+// use Illuminate\Support\Facades\Schema;
 
 class CrudController extends Controller
 {
-  public function MassInsert(Request $request)
-    {
-        // \Log::info($request->allFiles()); // Log all files that are uploaded.
 
-        $TableName     = $request->TableName;
-        $tableColumns  = Schema::getColumnListing($TableName);
-        $data          = $request->except(['_token', 'id', 'TableName', 'PostRoute']);
-        $rules         = [];
+    public function MassInsert(Request $request)
+    {
+        $TableName = $request->TableName;
+        $tableColumns = Schema::getColumnListing($TableName);
+        $data = $request->except(['_token', 'id', 'TableName', 'PostRoute']);
+        $rules = [];
         $uploadedFiles = [];
 
-        // Build validation rules based on table columns and input types
         foreach ($tableColumns as $column) {
             if ($request->hasFile($column)) {
-                $rules[$column] = 'file|mimes:pdf,doc,docx,jpg,jpeg,png,webp`|max:80000';
+                $rules[$column] = 'file|mimes:pdf,doc,docx,jpg,jpeg,png,webp|max:80000';
             } else {
                 $rules[$column] = 'nullable';
             }
         }
 
-        // Validate request data
         $validator = Validator::make($data, $rules);
 
         if ($validator->fails()) {
-            return response()->json([
-                'errors' => $validator->errors(),
-            ], 422); // You can return any status code you want. 422 is often used for validation errors.
+            return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        // Process form data
         foreach ($data as $key => $value) {
             if ($request->hasFile($key)) {
                 $uploadedFiles[$key] = $this->moveUploadedFile($request->file($key));
             }
         }
 
-        // Insert data into the table
         try {
-            unset($data['TableName']);
-            unset($data['id']);
-            unset($data['PostRoute']);
-            unset($data['_token']);
-            // unset($data['PostRoute']);
+            $insertData = array_merge($data, $uploadedFiles);
+            DB::table($TableName)->insert($insertData);
 
-            if ($TableName == 'districts') {
-
-                $PID = DB::table('provinces')->where('ProvinceName', $request->ProvinceID)->first();
-
-                $insertData = array_merge($data, $uploadedFiles);
-                DB::table($TableName)->insert($insertData);
-
-                DB::table($TableName)->where('DistrictID', $request->DistrictID)->update([
-
-                    'ProvinceID' => $PID->ProvinceID
-
-                ]);
-
-                return response()->json([
-                    [
-                        'status' => 'The action executed successfully',
-                    ],
-                ], 200);
-            } else {
-
-                $insertData = array_merge($data, $uploadedFiles);
-                DB::table($TableName)->insert($insertData);
-
-                return response()->json([
-                    [
-                        'status' => 'The action executed successfully',
-                    ],
-                ], 200);
-            }
-
-
-
-
-
-
-
+            return response()->json([['status' => 'The action executed successfully']], 200);
         } catch (\Exception $e) {
-            Log::error($e);
+            \Log::error($e);
 
-            return response()->json([
-                [
-                    'error_a' => 'Failed to insert data.  ' . $e->getMessage(),
-                ],
-            ]);
+            return response()->json([['error_a' => 'Failed to insert data.  ' . $e->getMessage()]], 500);
         }
-
-
     }
 
     private function moveUploadedFile($file)
@@ -115,7 +62,7 @@ class CrudController extends Controller
         }
 
         $destinationPath = public_path('assets/docs');
-        $fileName        = time() . '_' . $file->getClientOriginalName();
+        $fileName = time() . '_' . $file->getClientOriginalName();
         $file->move($destinationPath, $fileName);
 
         return 'assets/docs/' . $fileName;
@@ -130,10 +77,10 @@ class CrudController extends Controller
 
     public function MassUpdate(Request $request)
     {
-        $TableName     = $request->TableName;
-        $tableColumns  = Schema::getColumnListing($TableName);
-        $data          = $request->except(['_token', 'id', 'TableName', 'PostRoute']);
-        $rules         = [];
+        $TableName = $request->TableName;
+        $tableColumns = Schema::getColumnListing($TableName);
+        $data = $request->except(['_token', 'id', 'TableName', 'PostRoute']);
+        $rules = [];
         $uploadedFiles = [];
 
         // Build validation rules based on table columns and input types
@@ -165,11 +112,12 @@ class CrudController extends Controller
         try {
 
             $updateData = array_merge($data, $uploadedFiles);
-            $id         = $request->id;
+            $id = $request->id;
 
             // unset($updateData['id']);
             DB::table($TableName)->where('id', $request->id)->update($this->removeNullValues($updateData));
-        } catch (\Exception $e) {Log::error($e);
+        } catch (\Exception $e) {
+            Log::error($e);
 
             return response()->json([
                 [
@@ -190,22 +138,20 @@ class CrudController extends Controller
     {
 
         $TableName = $request->TableName;
-        $id        = $request->id;
-
-
+        $id = $request->id;
 
         try {
             if ($TableName == "ebs_structures") {
 
                 $u = DB::table($TableName)->where('id', $id)->first();
 
-
                 DB::table('users')->where('UserID', $u->UserID)->delete();
             }
 
             DB::table($TableName)->where('id', $id)->delete();
 
-        } catch (\Exception $e) {Log::error($e);
+        } catch (\Exception $e) {
+            Log::error($e);
 
             return response()->json([
                 [
@@ -215,7 +161,32 @@ class CrudController extends Controller
         }
 
     }
-
     // use Illuminate\Support\Facades\Schema;
+
+    public function getTableColumns(Request $request)
+    {
+        try {
+            $tableName = $request->input('TableName');
+
+            // Check if the table exists
+            if (!Schema::hasTable($tableName)) {
+                return response()->json([
+                    'error' => 'Table does not exist.',
+                ], 404);
+            }
+
+            // Get the columns of the table
+            $columns = DB::select("DESCRIBE $tableName");
+
+            return response()->json([
+                'columns' => $columns,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Failed to retrieve table columns.',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
 
 }

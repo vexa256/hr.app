@@ -12,28 +12,46 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('employees', function (Blueprint $table) {
-            $table->string('Name');
-            $table->string('UserID')->unique();
-            $table->string('EID')->unique();
-            $table->string('SupervisorID');
-            $table->string('Email')->unique();
-            $table->string('PhoneNumber')->nullable();
-            $table->date('DateOfBirth')->nullable();
-            $table->string('Gender')->nullable();
-            $table->string('PassportOrNationalIDNumber')->nullable(); // National ID is commonly used in East Africa
-            $table->string('Address')->nullable();
-            $table->string('City')->nullable();
-            $table->string('Country')->nullable(); // Default to a specific East African country
-            $table->string('EmployeeType')->default('International'); // Default to a specific East African country
-            $table->string('PID');
-            $table->string('BankAccountNumber');
-            $table->string('BankAccountName');
-            $table->string('BankName');
-            $table->string('SalaryPerMonthInUsd');
-            $table->string('TaxableSalaryAmountInUsd');
-            $table->date('DateOfJoining');
-            $table->integer('ContractValidityInMonths');
-            $table->string('DID')->nullable();
+            $table->id();
+            $table->string('StaffName', 255);
+            $table->string('HOD', 255)->nullable();
+            $table->string('PayrollID', 255);
+            $table->string('PhoneNumber', 255);
+            $table->string('EmployeeType', 255);
+            $table->string('Email', 255);
+            $table->string('LocalAddress', 255);
+            $table->string('PermanentAddress', 255);
+            $table->string('PassportOrNationalIdNumber', 255);
+            $table->string('IDScan', 255)->nullable();
+            $table->string('Nationality', 255);
+            $table->date('DOB');
+            // $table->string('Designation', 255)->nullable();
+            $table->string('Gender', 255)->nullable();
+            $table->string('RoleID', 255)->nullable();
+            $table->string('ReportsTo', 255)->nullable();
+            $table->string('ReportsToRoleID', 255)->nullable();
+            $table->string('DepartmentID', 255)->nullable();
+            $table->string('ClusterID', 255);
+            $table->string('ProjectID', 255);
+            $table->decimal('BasicSalaryPerMonthInUsd', 30, 2);
+            $table->decimal('TaxableAmount', 10, 2)->nullable();
+            $table->string('EmpID', 255);
+            $table->string('StaffCode', 255)->nullable();
+            $table->date('JoiningDate');
+            $table->date('ContractExpiry');
+            $table->string('BankName', 255);
+            $table->string('BankBranch', 255);
+            $table->string('AccountName', 255);
+            $table->bigInteger('AccountNumber');
+            $table->bigInteger('MonthsToExpiry')->nullable();
+            $table->string('TIN', 255)->nullable();
+            $table->string('BankCode', 255)->nullable();
+            $table->string('StaffPhoto', 255)->nullable();
+            $table->string('uuid', 255)->nullable();
+            $table->string('RecordStatus', 255);
+            $table->string('SoonExpiring', 255);
+            $table->timestamps();
+
         });
     }
 
