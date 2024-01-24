@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -15,7 +14,7 @@ return new class extends Migration
             $table->id();
             $table->string('StaffName', 255);
             $table->string('HOD', 255)->nullable();
-            $table->string('PayrollID', 255);
+            $table->string('AssignedPayroll', 255);
             $table->string('PhoneNumber', 255);
             $table->string('EmployeeType', 255);
             $table->string('Email', 255);
@@ -48,8 +47,9 @@ return new class extends Migration
             $table->string('BankCode', 255)->nullable();
             $table->string('StaffPhoto', 255)->nullable();
             $table->string('uuid', 255)->nullable();
-            $table->string('RecordStatus', 255);
-            $table->string('SoonExpiring', 255);
+            $table->string('RecordStatus', 255)->nullable();
+
+            $table->string('SoonExpiring', 255)->nullable();
             $table->timestamps();
 
         });
